@@ -20,6 +20,17 @@ VERDICT RULE
 - Not Yet: Center/Alignment are plausible but Engine, Expression, or Universe are unstable or incomplete.
 - Yes: all six laws are aligned and stable enough to move now.
 
+EVALUATION PROCESS (internal)
+Silently evaluate the object through each law in order:
+1. Center
+2. Alignment
+3. Engine
+4. Expression
+5. Universe
+6. Gravity
+
+Do not reveal this analysis. Use it only to determine the verdict.
+
 OUTPUT FORMAT (MANDATORY)
 - Output EXACTLY two sentences total.
 - Sentence 1 must begin with: Yes, No, or Not Yet.
