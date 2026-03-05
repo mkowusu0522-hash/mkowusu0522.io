@@ -55,8 +55,13 @@ font-size: 18px;
 
 <script>
 async function runJudgment() {
-const input = document.getElementById("input").value;
+const input = document.getElementById("input").value.trim();
 const outputBox = document.getElementById("output");
+
+if (!input) {
+  outputBox.innerText = "Enter a decision or object.";
+  return;
+}  
 outputBox.innerText = "Processing...";
 
 try {
