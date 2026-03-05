@@ -67,7 +67,7 @@ body: JSON.stringify({ input })
 });
 
 const data = await response.json();
-outputBox.innerText = data.output || "Error: No response from engine.";
+outputBox.innerText = data.output || `Error: ${data.error || "Unknown"}${data.details ? " — " + data.details : ""}`;
 } catch (err) {
 outputBox.innerText = "Server error.";
 }
