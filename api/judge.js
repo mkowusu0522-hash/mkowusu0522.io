@@ -1,4 +1,5 @@
 // /api/judge.js
+
 const SYSTEM_PROMPT = `
 You are the Judgment Engine v1.1.
 
@@ -29,9 +30,9 @@ OUTPUT FORMAT (MANDATORY)
 function isValidOutput(text) {
   const t = (text || "").trim();
   if (!/^(Yes|No|Not Yet)\b/.test(t)) return false;
-  // Count sentences by terminal punctuation; requires exactly 2.
-  const sentences = t.match(/[^.!?]+[.!?](?=\s|$)/g) || [];
-  return sentences.length === 2 && !t.includes("\n");
+  if (t.includes("\n")) return false;
+  const sentences = t.match(/[^.!?]+[.!?]/g) || [];
+  return sentences.length === 2;
 }
 
 export default async function handler(req, res) {
@@ -71,12 +72,15 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const output = data?.choices?.[0]?.message?.content?.trim() ?? "";
+    const output = data?.choices?.[0]?.message?.content?.trim();
 
-    if (!output) return res.status(500).json({ error: "No output from model" });
+    if (!output) {
+      return res.status(500).json({ error: "No output from model" });
+    }
+
     if (!isValidOutput(output)) {
       return res.status(422).json({
-        error: "Model output did not match required format (exactly two sentences starting with Yes/No/Not Yet).",
+        error: "Invalid format: output must be exactly two sentences starting with Yes, No, or Not Yet.",
         output,
       });
     }
@@ -86,4 +90,6 @@ export default async function handler(req, res) {
     return res.status(500).json({
       error: "Internal Server Error",
       details: err?.message || String(err),
-``` [1](https://dasroot.net/posts/2025/12/deploying-static-blogs-netlify-vercel/)
+    });
+  }
+}
