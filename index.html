@@ -1,0 +1,39 @@
+
+Matt Owusu <mkowusu0522@gmail.com>
+4:41 PM (0 minutes ago)
+to me
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Judgment Engine</title>
+<style>
+body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+textarea { width: 100%; height: 120px; font-size: 16px; }
+button { margin-top: 12px; padding: 10px 20px; font-size: 16px; }
+#result { margin-top: 20px; font-size: 18px; }
+</style>
+</head>
+<body>
+<h2>Judgment Engine</h2>
+<p>Enter any decision or object:</p>
+<textarea id="input"></textarea>
+<button onclick="runEngine()">Run Judgment</button>
+<div id="result"></div>
+
+<script>
+async function runEngine() {
+const userInput = document.getElementById("input").value;
+const resultBox = document.getElementById("result");
+resultBox.innerHTML = "Thinking...";
+
+// TODO: replace this with a real API call to your backend
+// that runs the Judgment Engine spec against a model.
+// For now, this is just a placeholder response.
+setTimeout(() => {
+resultBox.innerHTML = "Not Yet — this is a placeholder response. Connect this page to your Judgment Engine API.";
+}, 800);
+}
+</script>
+</body>
