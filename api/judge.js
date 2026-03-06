@@ -45,11 +45,20 @@ export default async function handler(req, res) {
     `Decision: ${decision.trim()}`;
 
   try {
-    if (domain.trim().toLowerCase() === "stocks") {
-      return res.status(200).json({
-      output: "Not Yet. Stocks domain route is connected, but the stock engine endpoint is not attached yet."
+  if (domain.trim().toLowerCase() === "stocks") {
+    const ticker = decision.trim().toUpperCase();
+    const stockResponse = await fetch(`https://stock-engine-api.onrender.com/stock/${ticker}`);
+    if (!stockResponse.ok) {
+      return res.status(500).json({
+        error: "Stock engine unavailable"
       });
     }
+    const stockData = await stockResponse.json();
+
+    return res.status(200).json({
+      output: stockData.judgment_verdict
+    });
+  }
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
