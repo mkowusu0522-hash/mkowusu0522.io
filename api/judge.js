@@ -45,6 +45,11 @@ export default async function handler(req, res) {
     `Decision: ${decision.trim()}`;
 
   try {
+    if (domain.trim().toLowerCase() === "stocks") {
+      return res.status(200).json({
+      output: "Not Yet. Stocks domain route is connected, but the stock engine endpoint is not attached yet."
+      });
+    }
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
