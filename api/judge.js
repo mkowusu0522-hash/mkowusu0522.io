@@ -82,7 +82,15 @@ export default async function handler(req, res) {
         output,
       });
     }
-
+    console.log({
+      domain,
+      motivation,
+      desiredOutcome,
+      decision,
+      output,
+      timestamp: new Date().toISOString()
+    });
+    
     return res.status(200).json({ output });
   } catch (err) {
     return res.status(500).json({
