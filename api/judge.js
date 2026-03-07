@@ -84,7 +84,13 @@ export default async function handler(req, res) {
     const stockData = await stockResponse.json();
 
     return res.status(200).json({
-      output: stockData.judgment_verdict
+      output:
+        `${stockData.judgment_verdict}. The stock engine verdict is based on the current structural and return conditions.\n` +
+        `Value: ${stockData.economic_quality_pass ? "The business clears the economic quality threshold." : "The business does not clear the economic quality threshold."}\n` +
+        `Bottleneck: ${stockData.price_pass ? "Price is not the binding constraint." : "Required return is the binding constraint at the current price."}\n` +
+        `Unit Cash: ${stockData.survivability_pass ? "The business produces sufficient operating economics to remain investable." : "The operating economics do not support survivability."}\n` +
+        `Durability: ${stockData.roic_hit_rate >= 0.75 ? "Returns appear durable across the stability window." : "Returns are not yet durable across the stability window."}\n` +
+        `Failure Point: ${stockData.price_pass ? "The main failure point is future deterioration in business quality or durability." : "The main failure point is paying too much relative to required return."}`
     });
   }
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
