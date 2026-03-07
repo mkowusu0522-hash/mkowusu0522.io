@@ -77,15 +77,11 @@
     let html = "";
   
     if (verdictLine) {
-      html += `<div style="margin-bottom:10px; line-height:1.5;">
-        <strong>${verdictLine}</strong>
-      </div>`;
+      html += `<div style="margin-bottom:10px; line-height:1.5;"><strong>${verdictLine}</strong></div>`;
     }
   
     if (explanationLine) {
-      html += `<div style="margin-bottom:14px; line-height:1.6;">
-        ${explanationLine}
-      </div>`;
+      html += `<div style="margin-bottom:14px; line-height:1.6;">${explanationLine}</div>`;
     }
   
     if (moveLines.length) {
@@ -97,12 +93,7 @@
         if (match) {
           const label = match[1].trim();
           const value = match[2].trim();
-  
-          const styledLabel =
-            label === "Value"
-              ? `<strong>${label}</strong>`
-              : label;
-  
+          const styledLabel = label === "Value" ? `<strong>${label}</strong>` : label;
           html += `<div>${styledLabel} — ${value}</div>`;
         } else {
           html += `<div>${line}</div>`;
@@ -113,6 +104,39 @@
     }
   
     outputBox.innerHTML = html || t;
+  }
+  
+  async function runJudgment() {
+    const outputBox = document.getElementById("output");
+  
+    const domain = document.getElementById("domain").value.trim();
+    const motivation = document.getElementById("motivation").value.trim();
+    const desiredOutcome = document.getElementById("outcome").value.trim();
+    const decision = document.getElementById("decision").value.trim();
+  
+    if (!domain || !motivation || !desiredOutcome || !decision) {
+      outputBox.innerText = "Enter Domain, Motivation, Desired Outcome, and Decision.";
+      return;
+    }
+  
+    outputBox.innerText = "Processing...";
+  
+    try {
+      const response = await fetch("/api/judge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain, motivation, desiredOutcome, decision })
+      });
+  
+      const data = await response.json();
+      const text =
+        data.output ||
+        `Error: ${data.error || "Unknown"}${data.details ? " — " + data.details : ""}`;
+  
+      renderOutput(text);
+    } catch (err) {
+      outputBox.innerText = "Server error.";
+    }
   }
   </script>
 </body>
