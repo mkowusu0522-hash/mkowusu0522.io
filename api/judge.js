@@ -28,10 +28,23 @@ Rules:
 
 function isValidOutput(text) {
   const t = (text || "").trim();
+
   if (!/^(Yes|No|Not Yet)\b/.test(t)) return false;
-  if (t.includes("\n")) return false;
-  const sentences = t.match(/[^.!?]+[.!?]/g) || [];
-  return sentences.length === 2;
+
+  const requiredLabels = [
+    "Value",
+    "Bottleneck",
+    "Unit Cash",
+    "Durability",
+    "Failure Point",
+  ];
+
+  for (const label of requiredLabels) {
+    const regex = new RegExp(`^${label}\\s*[:|-]`, "m");
+    if (!regex.test(t)) return false;
+  }
+
+  return true;
 }
 
 export default async function handler(req, res) {
@@ -107,8 +120,7 @@ export default async function handler(req, res) {
 
     if (!isValidOutput(output)) {
       return res.status(422).json({
-        error: "Invalid format: output must be exactly two sentences starting with Yes, No, or Not Yet.",
-        output,
+        error: "Invalid format: output must include a verdict and all five move labels.",
       });
     }
     console.log({
