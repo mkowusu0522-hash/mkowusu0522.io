@@ -85,12 +85,12 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       output:
-        `${stockData.judgment_verdict}. The stock engine verdict is based on the current structural and return conditions.\n` +
-        `Value: ${stockData.economic_quality_pass ? "The business clears the economic quality threshold." : "The business does not clear the economic quality threshold."}\n` +
-        `Bottleneck: ${stockData.price_pass ? "Price is not the binding constraint." : "Required return is the binding constraint at the current price."}\n` +
-        `Unit Cash: ${stockData.survivability_pass ? "The business produces sufficient operating economics to remain investable." : "The operating economics do not support survivability."}\n` +
-        `Durability: ${stockData.roic_hit_rate >= 0.75 ? "Returns appear durable across the stability window." : "Returns are not yet durable across the stability window."}\n` +
-        `Failure Point: ${stockData.price_pass ? "The main failure point is future deterioration in business quality or durability." : "The main failure point is paying too much relative to required return."}`
+    `${stockData.judgment_verdict}. The structure of the business and the return conditions determine the verdict.
+    Value — ${stockData.economic_quality_pass ? "The business generates real economic value." : "The business does not consistently generate economic value."}
+    Bottleneck — ${stockData.price_pass ? "Price is not the constraint on the decision." : "The current price is the constraint on achieving the required return."}
+    Unit Cash — ${stockData.survivability_pass ? "The business converts operations into reliable cash." : "The business struggles to convert operations into reliable cash."}
+    Durability — ${stockData.roic_hit_rate >= 0.75 ? "Returns appear durable across time." : "Returns do not appear durable across time."}
+    Failure Point — ${stockData.price_pass ? "Future deterioration in the business would break the structure." : "Overpaying relative to the business economics breaks the decision."}`
     });
   }
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
