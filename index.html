@@ -59,83 +59,61 @@
   <div id="output"></div>
 
   <script>
-    function renderOutput(text) {
-      const outputBox = document.getElementById("output");
-      const t = (text || "").trim();
+  function renderOutput(text) {
+    const outputBox = document.getElementById("output");
+    const t = (text || "").trim();
   
-      if (!t) {
-        outputBox.innerText = "";
-        return;
-      }
+    if (!t) {
+      outputBox.innerText = "";
+      return;
+    }
   
-      const lines = t.split("\n").map(line => line.trim()).filter(Boolean);
+    const lines = t.split("\n").map(line => line.trim()).filter(Boolean);
   
-      const verdictLine = lines[0] || "";
-      const explanationLine = lines[1] || "";
-      const moveLines = lines.slice(2);
+    const verdictLine = lines[0] || "";
+    const explanationLine = lines[1] || "";
+    const moveLines = lines.slice(2);
   
-      let html = "";
+    let html = "";
   
-      if (verdictLine) {
-        html += `<div style="margin-bottom:10px; line-height:1.5;">${verdictLine}</div>`;
-      }
+    if (verdictLine) {
+      html += `<div style="margin-bottom:10px; line-height:1.5;">
+        <strong>${verdictLine}</strong>
+      </div>`;
+    }
   
-      if (explanationLine) {
-        html += `<div style="margin-bottom:14px; line-height:1.6;">${explanationLine}</div>`;
-      }
+    if (explanationLine) {
+      html += `<div style="margin-bottom:14px; line-height:1.6;">
+        ${explanationLine}
+      </div>`;
+    }
   
-      if (moveLines.length) {
-        html += `<div style="line-height:1.8;">`;
+    if (moveLines.length) {
+      html += `<div style="line-height:1.8;">`;
   
-        for (const line of moveLines) {
-          const match = line.match(/^([^:—-]+)\s*[:—-]\s*(.*)$/);
-          if (match) {
-            const label = match[1].trim();
-            const value = match[2].trim();
-            html += `<div><span style="font-weight:600;">${label}</span> — ${value}</div>`;
-          } else {
-            html += `<div>${line}</div>`;
-          }
+      for (const line of moveLines) {
+        const match = line.match(/^([^:—-]+)\s*[:—-]\s*(.*)$/);
+  
+        if (match) {
+          const label = match[1].trim();
+          const value = match[2].trim();
+  
+          const styledLabel =
+            label === "Value"
+              ? `<strong>${label}</strong>`
+              : label;
+  
+          html += `<div>${styledLabel} — ${value}</div>`;
+        } else {
+          html += `<div>${line}</div>`;
         }
-  
-        html += `</div>`;
       }
   
-      outputBox.innerHTML = html || t;
+      html += `</div>`;
     }
   
-    async function runJudgment() {
-      const outputBox = document.getElementById("output");
-  
-      const domain = document.getElementById("domain").value.trim();
-      const motivation = document.getElementById("motivation").value.trim();
-      const desiredOutcome = document.getElementById("outcome").value.trim();
-      const decision = document.getElementById("decision").value.trim();
-  
-      if (!domain || !motivation || !desiredOutcome || !decision) {
-        outputBox.innerText = "Enter Domain, Motivation, Desired Outcome, and Decision.";
-        return;
-      }
-  
-      outputBox.innerText = "Processing...";
-  
-      try {
-        const response = await fetch("/api/judge", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ domain, motivation, desiredOutcome, decision })
-        });
-  
-        const data = await response.json();
-        const text =
-          data.output ||
-          `Error: ${data.error || "Unknown"}${data.details ? " — " + data.details : ""}`;
-  
-        renderOutput(text);
-      } catch (err) {
-        outputBox.innerText = "Server error.";
-      }
-    }
+    outputBox.innerHTML = html || t;
+  }
   </script>
 </body>
 </html>
