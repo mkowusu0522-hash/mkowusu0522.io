@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capital Allocation Engine</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: #111;
+      border-bottom: 1px solid #222;
+    }
+    header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.04em; }
+    header .subtitle { font-size: 12px; color: #666; margin-top: 2px; }
+
+    .nav-links { display: flex; gap: 12px; }
+    .nav-links a {
+      font-size: 13px; color: #888; text-decoration: none;
+      padding: 4px 10px; border-radius: 4px; border: 1px solid #333;
+    }
+    .nav-links a:hover { color: #e0e0e0; border-color: #555; }
+    .nav-links a.active { color: #fff; border-color: #4a9eff; background: #1a2a3a; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 16px;
+      padding: 16px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title .count-badge {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: #888;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .controls input {
+      flex: 1;
+      min-width: 160px;
+      padding: 8px 12px;
+      font-size: 14px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #e0e0e0;
+      outline: none;
+    }
+    .controls input:focus { border-color: #4a9eff; }
+    .controls input::placeholder { color: #444; }
+    .btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .btn-primary { background: #4a9eff; color: #000; }
+    .btn-primary:hover { background: #6ab4ff; }
+    .btn-secondary { background: #222; color: #aaa; border: 1px solid #333; }
+    .btn-secondary:hover { background: #2a2a2a; color: #ccc; }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* ── Map / Radar ── */
+    #map-panel { grid-column: 1; grid-row: 2; }
+
+    #map-canvas-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: 460px;
+      background: #0a0a0a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    canvas#map-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .map-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #666;
+    }
+    .map-legend .dot {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+      margin-right: 4px; vertical-align: middle;
+    }
+
+    /* ── Tooltip ── */
+    #map-tooltip {
+      position: fixed;
+      display: none;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 100;
+      max-width: 260px;
+      line-height: 1.6;
+    }
+    #map-tooltip .tt-ticker { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    #map-tooltip .tt-row { display: flex; justify-content: space-between; gap: 12px; }
+    #map-tooltip .tt-label { color: #666; }
+    #map-tooltip .tt-value { color: #ccc; }
+
+    /* ── Board ── */
+    #board-panel { grid-column: 2; grid-row: 2; }
+
+    .board-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .board-table th {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid #222;
+      color: #555;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .board-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #181818;
+      cursor: pointer;
+    }
+    .board-table tbody tr:hover td { background: #161616; }
+    .board-table .ticker-col { font-weight: 700; color: #fff; }
+    .board-table .score-col { font-variant-numeric: tabular-nums; color: #aaa; }
+
+    .lane-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    .lane-Core    { background: #0d2e0d; color: #4caf50; border: 1px solid #1a4d1a; }
+    .lane-Watch   { background: #2e2a0d; color: #ffcc00; border: 1px solid #4d440d; }
+    .lane-Caution { background: #2e1a0d; color: #ff8c00; border: 1px solid #4d2e0d; }
+    .lane-Avoid   { background: #2e0d0d; color: #f44336; border: 1px solid #4d1a1a; }
+
+    .zone-badge {
+      display: inline-block;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .zone-Q1 { background: #0d2e0d; color: #4caf50; }
+    .zone-Q4 { background: #2e2a0d; color: #ffcc00; }
+    .zone-Q2 { background: #2e1a0d; color: #ff8c00; }
+    .zone-Q3 { background: #2e0d0d; color: #f44336; }
+
+    /* ── Portfolio ── */
+    #portfolio-panel { grid-column: 1; grid-row: 3; }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+      gap: 8px;
+    }
+    .portfolio-card {
+      background: #0d2e0d;
+      border: 1px solid #1a4d1a;
+      border-radius: 6px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .portfolio-card:hover { border-color: #4caf50; }
+    .portfolio-card .pc-ticker { font-size: 13px; font-weight: 700; color: #fff; }
+    .portfolio-card .pc-score  { font-size: 11px; color: #4caf50; margin-top: 2px; }
+    .portfolio-card .pc-zone   { font-size: 10px; color: #666; margin-top: 1px; }
+
+    /* ── Alerts ── */
+    #alerts-panel { grid-column: 2; grid-row: 3; }
+
+    .alert-tabs { display: flex; gap: 0; margin-bottom: 10px; }
+    .alert-tab {
+      padding: 5px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #666;
+    }
+    .alert-tab:first-child { border-radius: 4px 0 0 4px; }
+    .alert-tab:last-child  { border-radius: 0 4px 4px 0; border-left: none; }
+    .alert-tab.active { background: #222; color: #e0e0e0; border-color: #555; }
+
+    .alert-list { max-height: 200px; overflow-y: auto; }
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #181818;
+      font-size: 12px;
+    }
+    .alert-item:last-child { border-bottom: none; }
+    .alert-ticker { font-weight: 700; color: #fff; min-width: 44px; }
+    .alert-label  { color: #aaa; flex: 1; }
+    .alert-change { color: #666; font-size: 11px; white-space: nowrap; }
+    .alert-icon   { font-size: 14px; }
+    .alert-structural .alert-icon { color: #ff8c00; }
+    .alert-judgment   .alert-icon { color: #4a9eff; }
+    .empty-msg { color: #444; font-size: 12px; padding: 16px 0; text-align: center; }
+
+    /* ── Ticker detail / Manual ── */
+    #manual-panel { grid-column: 1 / -1; grid-row: 1; }
+    .manual-controls { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+    .manual-controls .controls { flex: 1; }
+
+    #ticker-detail {
+      margin-top: 12px;
+      display: none;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .detail-stat {
+      background: #0f0f0f;
+      border: 1px solid #222;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .detail-stat .ds-label { font-size: 10px; color: #555; letter-spacing: 0.06em; text-transform: uppercase; }
+    .detail-stat .ds-value { font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px; }
+    .detail-stat .ds-sub   { font-size: 11px; color: #666; margin-top: 2px; }
+
+    .detail-read {
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.7;
+      padding: 10px 14px;
+      background: #0f0f0f;
+      border: 1px solid #222;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .detail-context {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.7;
+      padding: 12px 14px;
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      border-radius: 6px;
+    }
+    .detail-context h4 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #555; margin-bottom: 6px; }
+    .detail-context .ctx-row { margin-bottom: 6px; }
+    .detail-context .ctx-label { color: #555; font-size: 11px; }
+    .detail-context .ctx-value { color: #999; }
+
+    /* ── Status bar ── */
+    #status-bar {
+      font-size: 11px;
+      color: #444;
+      padding: 8px 24px;
+      border-top: 1px solid #1a1a1a;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    #status-bar span { white-space: nowrap; }
+    #status-bar .ok  { color: #4caf50; }
+    #status-bar .warn { color: #ff8c00; }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid #333;
+      border-top-color: #4a9eff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 800px) {
+      .main-grid { grid-template-columns: 1fr; }
+      #map-panel, #board-panel, #portfolio-panel, #alerts-panel {
+        grid-column: 1;
+        grid-row: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>Capital Allocation Engine</h1>
+      <div class="subtitle">S&amp;P 500 Structural Analysis</div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Judgment Engine</a>
+      <a href="capital.html" class="active">Capital Dashboard</a>
+    </div>
+  </header>
+
+  <!-- Manual ticker analysis + universe controls -->
+  <div class="main-grid">
+    <div class="panel" id="manual-panel">
+      <div class="panel-title">
+        Manual Ticker Analysis
+        <span id="scan-status" style="font-size:11px;color:#555;font-weight:400;letter-spacing:0;"></span>
+      </div>
+      <div class="manual-controls">
+        <div class="controls">
+          <input id="ticker-input" placeholder="Enter ticker (e.g. AAPL)" maxlength="10" />
+          <button class="btn btn-primary" onclick="analyzeTicker()">Analyze</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" id="scan-btn" onclick="runUniverseScan(false)">
+            Load Universe
+          </button>
+          <button class="btn btn-secondary" id="refresh-btn" onclick="runUniverseScan(true)">
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div id="ticker-detail"></div>
+    </div>
+
+    <!-- Structural Map -->
+    <div class="panel" id="map-panel">
+      <div class="panel-title">
+        Structural Map
+        <span class="count-badge" id="map-count">—</span>
+      </div>
+      <div id="map-canvas-container">
+        <canvas id="map-canvas"></canvas>
+      </div>
+      <div class="map-legend">
+        <span><span class="dot" style="background:#4caf50"></span>Q1 Compounder</span>
+        <span><span class="dot" style="background:#ffcc00"></span>Q4 Hold/Wait</span>
+        <span><span class="dot" style="background:#ff8c00"></span>Q2 Speculative</span>
+        <span><span class="dot" style="background:#f44336"></span>Q3 Avoid</span>
+      </div>
+    </div>
+
+    <!-- Judgment Board -->
+    <div class="panel" id="board-panel">
+      <div class="panel-title">
+        Judgment Board
+        <span class="count-badge" id="board-count">—</span>
+      </div>
+      <div id="board-container">
+        <div class="empty-msg">Load universe to populate board.</div>
+      </div>
+    </div>
+
+    <!-- Portfolio -->
+    <div class="panel" id="portfolio-panel">
+      <div class="panel-title">
+        Portfolio Eligible
+        <span class="count-badge" id="portfolio-count">—</span>
+      </div>
+      <div id="portfolio-container">
+        <div class="empty-msg">Conviction ≥ 0.50 tickers will appear here.</div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="panel" id="alerts-panel">
+      <div class="panel-title">
+        Alerts
+        <span class="count-badge" id="alerts-count">—</span>
+      </div>
+      <div class="alert-tabs">
+        <div class="alert-tab active" id="tab-structural" onclick="switchTab('structural')">Structural</div>
+        <div class="alert-tab" id="tab-judgment" onclick="switchTab('judgment')">Judgment</div>
+      </div>
+      <div class="alert-list" id="alerts-list">
+        <div class="empty-msg">Alerts will appear after a second universe scan.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  <div id="map-tooltip"></div>
+
+  <!-- Status bar -->
+  <div id="status-bar">
+    <span id="sb-universe">Universe: —</span>
+    <span id="sb-scan">Scanned: —</span>
+    <span id="sb-failures">Failures: —</span>
+    <span id="sb-map">Map: —</span>
+    <span id="sb-board">Board: —</span>
+    <span id="sb-portfolio">Portfolio-eligible: —</span>
+    <span id="sb-time">Snapshot: —</span>
+  </div>
+
+  <script>
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Constants — mirror the thresholds used in api/_engine.js
+  // ─────────────────────────────────────────────────────────────────────────────
+  const PORTFOLIO_CONVICTION_THRESHOLD = 0.5;  // min conviction to appear in Portfolio view
+  const ROIC_ALERT_THRESHOLD           = 0.1;  // min ROIC change to trigger a structural alert
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────────────────────────────────────
+  let currentSnapshot = null;     // Full universe snapshot from /api/universe
+  let previousSnapshot = null;    // Previous snapshot for alert diffing
+  let structuralAlerts = [];
+  let judgmentAlerts   = [];
+  let activeTab = "structural";
+
+  // Keyed by ticker from previous snapshot for diff
+  let prevByTicker = {};
+
+  // Map canvas state
+  let mapTickers = [];            // Tickers currently rendered on map
+  const DOT_RADIUS = 4;
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Universe scan (automatic flow)
+  // ─────────────────────────────────────────────────────────────────────────────
+  async function runUniverseScan(forceRefresh = false) {
+    const btn = document.getElementById("scan-btn");
+    const refBtn = document.getElementById("refresh-btn");
+    setScanStatus('<span class="spinner"></span>Scanning universe…');
+    btn.disabled = true;
+    refBtn.disabled = true;
+
+    try {
+      const url = forceRefresh ? "/api/universe?refresh=true" : "/api/universe";
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setScanStatus(`Error: ${data.error || "Unknown"}`);
+        return;
+      }
+
+      // Diff against previous snapshot for alerts
+      if (currentSnapshot) {
+        prevByTicker = {};
+        for (const r of currentSnapshot.results) prevByTicker[r.ticker] = r;
+        computeAlerts(data.results);
+      }
+
+      currentSnapshot = data;
+
+      renderMap(data.results);
+      renderBoard(data.results);
+      renderPortfolio(data.results);
+      updateStatusBar(data);
+      setScanStatus(`Snapshot: ${formatTime(data.snapshot_time)}`);
+    } catch (err) {
+      setScanStatus(`Error: ${err.message}`);
+    } finally {
+      btn.disabled = false;
+      refBtn.disabled = false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Single ticker analysis (manual flow)
+  // ─────────────────────────────────────────────────────────────────────────────
+  async function analyzeTicker() {
+    const input = document.getElementById("ticker-input");
+    const ticker = input.value.trim().toUpperCase();
+    if (!ticker) return;
+
+    const detail = document.getElementById("ticker-detail");
+    detail.style.display = "block";
+    detail.innerHTML = '<span class="spinner"></span>Analyzing…';
+
+    try {
+      const res = await fetch(`/api/analyze?ticker=${encodeURIComponent(ticker)}`);
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        detail.innerHTML = `<div style="color:#f44336;font-size:13px;">${data.error || "No data"}</div>`;
+        return;
+      }
+
+      renderTickerDetail(data, detail);
+    } catch (err) {
+      detail.innerHTML = `<div style="color:#f44336;font-size:13px;">Error: ${err.message}</div>`;
+    }
+  }
+
+  document.getElementById("ticker-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") analyzeTicker();
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Ticker detail render
+  // ─────────────────────────────────────────────────────────────────────────────
+  function renderTickerDetail(d, container) {
+    const m = d.metrics || {};
+    const ctx = d.context;
+
+    const pass = v => v
+      ? `<span style="color:#4caf50">✓ Pass</span>`
+      : `<span style="color:#f44336">✗ Fail</span>`;
+
+    let contextHtml = "";
+    if (ctx) {
+      contextHtml = `
+        <div class="detail-context">
+          <h4>Business Context — ${esc(ctx.name || d.ticker)}</h4>
+          <div class="ctx-row"><span class="ctx-label">Business: </span><span class="ctx-value">${esc(ctx.business)}</span></div>
+          <div class="ctx-row"><span class="ctx-label">Value source: </span><span class="ctx-value">${esc(ctx.value_source)}</span></div>
+          <div class="ctx-row"><span class="ctx-label">What breaks it: </span><span class="ctx-value">${esc(ctx.what_breaks_it)}</span></div>
+          <div class="ctx-row"><span class="ctx-label">Capital pattern: </span><span class="ctx-value">${esc(ctx.capital_pattern)}</span></div>
+          <div class="ctx-row"><span class="ctx-label">Recent structural: </span><span class="ctx-value">${esc(ctx.recent_structural)}</span></div>
+        </div>`;
+    }
+
+    container.innerHTML = `
+      <div class="detail-grid">
+        <div class="detail-stat">
+          <div class="ds-label">Ticker</div>
+          <div class="ds-value">${esc(d.ticker)}</div>
+          <div class="ds-sub">${esc(d.quadrant)}</div>
+        </div>
+        <div class="detail-stat">
+          <div class="ds-label">Verdict</div>
+          <div class="ds-value" style="color:${verdictColor(d.verdict)}">${esc(d.verdict)}</div>
+          <div class="ds-sub">Board: ${esc(d.board_lane)}</div>
+        </div>
+        <div class="detail-stat">
+          <div class="ds-label">Conviction</div>
+          <div class="ds-value">${(d.conviction_score * 100).toFixed(0)}%</div>
+          <div class="ds-sub">Structural: ${(d.structural_score * 100).toFixed(0)}%</div>
+        </div>
+        <div class="detail-stat">
+          <div class="ds-label">Position (x, y)</div>
+          <div class="ds-value">${d.x}, ${d.y}</div>
+          <div class="ds-sub">Zone: ${esc(d.zone)}</div>
+        </div>
+        <div class="detail-stat">
+          <div class="ds-label">Economic Quality</div>
+          <div class="ds-value">${pass(m.economic_quality_pass)}</div>
+        </div>
+        <div class="detail-stat">
+          <div class="ds-label">Survivability</div>
+          <div class="ds-value">${pass(m.survivability_pass)}</div>
+        </div>
+        <div class="detail-stat">
+          <div class="ds-label">Price</div>
+          <div class="ds-value">${pass(m.price_pass)}</div>
+        </div>
+        <div class="detail-stat">
+          <div class="ds-label">ROIC Hit Rate</div>
+          <div class="ds-value">${((m.roic_hit_rate || 0) * 100).toFixed(0)}%</div>
+          <div class="ds-sub">${m.roic_hit_rate >= 0.75 ? "Durable" : "Not durable"}</div>
+        </div>
+      </div>
+      ${d.primary_failure ? `<div class="detail-read" style="color:#ff8c00">Primary failure: ${esc(d.primary_failure.replace(/_/g,' '))}</div>` : ""}
+      <div class="detail-read">${esc(d.structural_read)}</div>
+      ${contextHtml}`;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Structural map
+  // ─────────────────────────────────────────────────────────────────────────────
+  const canvas = document.getElementById("map-canvas");
+  const ctx2d  = canvas.getContext("2d");
+  const tooltip = document.getElementById("map-tooltip");
+
+  function resizeCanvas() {
+    const container = document.getElementById("map-canvas-container");
+    const size = Math.min(container.clientWidth, container.clientHeight);
+    canvas.width  = size;
+    canvas.height = size;
+    if (mapTickers.length) drawMap(mapTickers);
+  }
+  window.addEventListener("resize", resizeCanvas);
+
+  const ZONE_COLORS = { Q1: "#4caf50", Q4: "#ffcc00", Q2: "#ff8c00", Q3: "#f44336" };
+
+  function zoneToColor(zone) { return ZONE_COLORS[zone] || "#aaa"; }
+
+  function worldToCanvas(x, y, size) {
+    // x and y are in the range approximately -5 to +5 (matching COORDINATE_SCALE_FACTOR in _engine.js).
+    // structural_score 0→1 maps x to (-5, +5); price pass/fail maps y to ~(-3.5, +3.5).
+    const pad = size * 0.08;
+    const inner = size - pad * 2;
+    const cx = pad + ((x + 5) / 10) * inner;
+    const cy = pad + ((5 - y) / 10) * inner;  // invert Y
+    return [cx, cy];
+  }
+
+  function drawMap(tickers) {
+    const size = canvas.width;
+    ctx2d.clearRect(0, 0, size, size);
+
+    // Background
+    ctx2d.fillStyle = "#0a0a0a";
+    ctx2d.fillRect(0, 0, size, size);
+
+    const pad = size * 0.08;
+    const inner = size - pad * 2;
+
+    // Quadrant backgrounds
+    const mid = pad + inner / 2;
+    ctx2d.globalAlpha = 0.04;
+    ctx2d.fillStyle = "#4caf50"; ctx2d.fillRect(mid, pad, inner / 2, inner / 2);   // Q1
+    ctx2d.fillStyle = "#ff8c00"; ctx2d.fillRect(pad, pad, inner / 2, inner / 2);   // Q2
+    ctx2d.fillStyle = "#f44336"; ctx2d.fillRect(pad, mid, inner / 2, inner / 2);   // Q3
+    ctx2d.fillStyle = "#ffcc00"; ctx2d.fillRect(mid, mid, inner / 2, inner / 2);   // Q4
+    ctx2d.globalAlpha = 1;
+
+    // Axes
+    ctx2d.strokeStyle = "#222";
+    ctx2d.lineWidth = 1;
+    ctx2d.beginPath();
+    ctx2d.moveTo(mid, pad); ctx2d.lineTo(mid, pad + inner);
+    ctx2d.moveTo(pad, mid); ctx2d.lineTo(pad + inner, mid);
+    ctx2d.stroke();
+
+    // Axis labels
+    ctx2d.fillStyle = "#333";
+    ctx2d.font = `${Math.max(9, size * 0.022)}px Arial`;
+    ctx2d.textAlign = "center";
+    ctx2d.fillText("← Low Quality  |  High Quality →", size / 2, size - pad * 0.3);
+    ctx2d.save();
+    ctx2d.translate(pad * 0.35, size / 2);
+    ctx2d.rotate(-Math.PI / 2);
+    ctx2d.fillText("← Poor Price  |  Good Price →", 0, 0);
+    ctx2d.restore();
+
+    // Dots
+    for (const t of tickers) {
+      const [cx, cy] = worldToCanvas(t.x, t.y, size);
+      const color = zoneToColor(t.zone);
+
+      ctx2d.beginPath();
+      ctx2d.arc(cx, cy, DOT_RADIUS, 0, Math.PI * 2);
+      ctx2d.fillStyle = color;
+      ctx2d.globalAlpha = 0.85;
+      ctx2d.fill();
+      ctx2d.globalAlpha = 1;
+    }
+
+    document.getElementById("map-count").textContent = `${tickers.length} tickers`;
+  }
+
+  function renderMap(results) {
+    mapTickers = results;
+    resizeCanvas();
+  }
+
+  // Tooltip on hover
+  canvas.addEventListener("mousemove", e => {
+    const rect  = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top)  * scaleY;
+    const size = canvas.width;
+
+    let closest = null;
+    let minDist  = 14 * (size / 460);  // scale hit radius
+
+    for (const t of mapTickers) {
+      const [cx, cy] = worldToCanvas(t.x, t.y, size);
+      const dist = Math.hypot(cx - mx, cy - my);
+      if (dist < minDist) { minDist = dist; closest = t; }
+    }
+
+    if (closest) {
+      tooltip.style.display = "block";
+      tooltip.style.left    = `${e.clientX + 14}px`;
+      tooltip.style.top     = `${e.clientY - 10}px`;
+      tooltip.innerHTML = `
+        <div class="tt-ticker">${esc(closest.ticker)}</div>
+        <div class="tt-row"><span class="tt-label">Verdict</span><span class="tt-value">${esc(closest.verdict)}</span></div>
+        <div class="tt-row"><span class="tt-label">Zone</span><span class="tt-value">${esc(closest.zone)} — ${esc(closest.quadrant)}</span></div>
+        <div class="tt-row"><span class="tt-label">Board Lane</span><span class="tt-value">${esc(closest.board_lane)}</span></div>
+        <div class="tt-row"><span class="tt-label">Conviction</span><span class="tt-value">${(closest.conviction_score * 100).toFixed(0)}%</span></div>
+        <div class="tt-row"><span class="tt-label">Structural</span><span class="tt-value">${(closest.structural_score * 100).toFixed(0)}%</span></div>
+        <div class="tt-row"><span class="tt-label">Primary failure</span><span class="tt-value">${closest.primary_failure ? esc(closest.primary_failure.replace(/_/g,' ')) : '—'}</span></div>`;
+    } else {
+      tooltip.style.display = "none";
+    }
+  });
+
+  canvas.addEventListener("click", e => {
+    const rect  = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top)  * scaleY;
+    const size = canvas.width;
+
+    for (const t of mapTickers) {
+      const [cx, cy] = worldToCanvas(t.x, t.y, size);
+      if (Math.hypot(cx - mx, cy - my) < 12) {
+        document.getElementById("ticker-input").value = t.ticker;
+        analyzeTicker();
+        break;
+      }
+    }
+  });
+
+  canvas.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Judgment board
+  // ─────────────────────────────────────────────────────────────────────────────
+  function renderBoard(results) {
+    const sorted = [...results].sort((a, b) => b.conviction_score - a.conviction_score);
+    const container = document.getElementById("board-container");
+
+    if (!sorted.length) {
+      container.innerHTML = '<div class="empty-msg">No data.</div>';
+      document.getElementById("board-count").textContent = "0";
+      return;
+    }
+
+    document.getElementById("board-count").textContent = `${sorted.length} tickers`;
+
+    const maxVisible = 100;
+    const rows = sorted.slice(0, maxVisible).map(t => `
+      <tr onclick="selectTickerFromBoard('${esc(t.ticker)}')">
+        <td class="ticker-col">${esc(t.ticker)}</td>
+        <td><span class="lane-badge lane-${esc(t.board_lane)}">${esc(t.board_lane)}</span></td>
+        <td><span class="zone-badge zone-${esc(t.zone)}">${esc(t.zone)}</span></td>
+        <td class="score-col">${(t.conviction_score * 100).toFixed(0)}%</td>
+        <td class="score-col" style="color:#555">${(t.structural_score * 100).toFixed(0)}%</td>
+      </tr>`).join("");
+
+    container.innerHTML = `
+      <div style="overflow-y:auto;max-height:400px;">
+        <table class="board-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Lane</th>
+              <th>Zone</th>
+              <th>Conv.</th>
+              <th>Struct.</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function selectTickerFromBoard(ticker) {
+    document.getElementById("ticker-input").value = ticker;
+    analyzeTicker();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Portfolio view
+  // ─────────────────────────────────────────────────────────────────────────────
+  function renderPortfolio(results) {
+    const eligible = results
+      .filter(r => r.conviction_score >= PORTFOLIO_CONVICTION_THRESHOLD)
+      .sort((a, b) => b.conviction_score - a.conviction_score);
+
+    const container = document.getElementById("portfolio-container");
+    document.getElementById("portfolio-count").textContent = `${eligible.length} tickers`;
+
+    if (!eligible.length) {
+      container.innerHTML = `<div class="empty-msg">No tickers meet conviction threshold (≥ ${PORTFOLIO_CONVICTION_THRESHOLD.toFixed(2)}).</div>`;
+      return;
+    }
+
+    const cards = eligible.map(t => `
+      <div class="portfolio-card" onclick="selectTickerFromBoard('${esc(t.ticker)}')">
+        <div class="pc-ticker">${esc(t.ticker)}</div>
+        <div class="pc-score">${(t.conviction_score * 100).toFixed(0)}%</div>
+        <div class="pc-zone">${esc(t.zone)}</div>
+      </div>`).join("");
+
+    container.innerHTML = `<div class="portfolio-grid">${cards}</div>`;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Alerts
+  // ─────────────────────────────────────────────────────────────────────────────
+  function computeAlerts(nextResults) {
+    structuralAlerts = [];
+    judgmentAlerts   = [];
+
+    for (const next of nextResults) {
+      const prev = prevByTicker[next.ticker];
+      if (!prev) continue;
+
+      const { structural, judgment } = diffTicker(prev, next);
+      structuralAlerts.push(...structural);
+      judgmentAlerts.push(...judgment);
+    }
+
+    renderAlerts();
+    const total = structuralAlerts.length + judgmentAlerts.length;
+    document.getElementById("alerts-count").textContent = `${total} alerts`;
+  }
+
+  function diffTicker(prev, next) {
+    const structural = [];
+    const judgment   = [];
+    const t  = next.ticker;
+    const ts = next.timestamp;
+
+    const structFields = [
+      ["economic_quality_pass", "Economic quality"],
+      ["survivability_pass",    "Survivability"],
+      ["price_pass",            "Price attractiveness"],
+    ];
+
+    for (const [field, label] of structFields) {
+      if (prev.metrics[field] !== next.metrics[field]) {
+        structural.push({ ticker: t, reason_code: `structural.${field}`, label, from: prev.metrics[field], to: next.metrics[field], timestamp: ts });
+      }
+    }
+
+    const roicPrevRate = prev.metrics.roic_hit_rate || 0;
+    const roicNextRate = next.metrics.roic_hit_rate || 0;
+    if (Math.abs(roicPrevRate - roicNextRate) >= ROIC_ALERT_THRESHOLD) {
+      structural.push({ ticker: t, reason_code: "structural.roic_hit_rate", label: "ROIC hit rate", from: roicPrevRate, to: roicNextRate, timestamp: ts });
+    }
+
+    if (prev.verdict !== next.verdict) {
+      judgment.push({ ticker: t, reason_code: "judgment.verdict", label: "Verdict", from: prev.verdict, to: next.verdict, timestamp: ts });
+    }
+    if (prev.board_lane !== next.board_lane) {
+      judgment.push({ ticker: t, reason_code: "judgment.board_lane", label: "Board lane", from: prev.board_lane, to: next.board_lane, timestamp: ts });
+    }
+
+    return { structural, judgment };
+  }
+
+  function renderAlerts() {
+    const list     = document.getElementById("alerts-list");
+    const alerts   = activeTab === "structural" ? structuralAlerts : judgmentAlerts;
+    const cssClass = activeTab === "structural" ? "alert-structural" : "alert-judgment";
+    const icon     = activeTab === "structural" ? "⚡" : "🔄";
+
+    if (!alerts.length) {
+      list.innerHTML = `<div class="empty-msg">No ${activeTab} alerts detected.</div>`;
+      return;
+    }
+
+    list.innerHTML = alerts.map(a => `
+      <div class="alert-item ${cssClass}">
+        <span class="alert-icon">${icon}</span>
+        <span class="alert-ticker">${esc(a.ticker)}</span>
+        <span class="alert-label">${esc(a.label)} changed</span>
+        <span class="alert-change">${formatAlertValue(a.from)} → ${formatAlertValue(a.to)}</span>
+      </div>`).join("");
+  }
+
+  function formatAlertValue(v) {
+    if (v === true)  return "✓";
+    if (v === false) return "✗";
+    if (typeof v === "number") return (v * 100).toFixed(0) + "%";
+    return esc(String(v));
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById("tab-structural").className = "alert-tab" + (tab === "structural" ? " active" : "");
+    document.getElementById("tab-judgment").className   = "alert-tab" + (tab === "judgment"   ? " active" : "");
+    renderAlerts();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Status bar + helpers
+  // ─────────────────────────────────────────────────────────────────────────────
+  function updateStatusBar(data) {
+    const d = data.debug || {};
+    const fc = d.failure_count || 0;
+
+    document.getElementById("sb-universe").textContent  = `Universe: ${d.universe_count || "—"}`;
+    document.getElementById("sb-scan").textContent      = `Scanned: ${d.scan_count || "—"}`;
+    document.getElementById("sb-failures").className    = fc > 0 ? "warn" : "";
+    document.getElementById("sb-failures").textContent  = `Failures: ${fc}`;
+    document.getElementById("sb-map").textContent       = `Map: ${d.map_tickers || "—"}`;
+    document.getElementById("sb-board").textContent     = `Board: ${d.board_tickers || "—"}`;
+    document.getElementById("sb-portfolio").textContent = `Portfolio-eligible: ${d.portfolio_eligible || "—"}`;
+    document.getElementById("sb-time").textContent      = `Snapshot: ${formatTime(data.snapshot_time)}`;
+  }
+
+  function setScanStatus(msg) {
+    document.getElementById("scan-status").innerHTML = msg;
+  }
+
+  function formatTime(iso) {
+    if (!iso) return "—";
+    return new Date(iso).toLocaleTimeString();
+  }
+
+  function verdictColor(v) {
+    if (v === "Yes")     return "#4caf50";
+    if (v === "No")      return "#f44336";
+    if (v === "Not Yet") return "#ffcc00";
+    return "#aaa";
+  }
+
+  // Escape HTML
+  function esc(s) {
+    if (s == null) return "";
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Init
+  // ─────────────────────────────────────────────────────────────────────────────
+  resizeCanvas();
+  </script>
+</body>
+</html>

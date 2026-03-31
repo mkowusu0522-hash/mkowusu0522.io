@@ -1,0 +1,130 @@
+{
+  "AAPL": {
+    "name": "Apple Inc.",
+    "business": "Designs and sells consumer electronics, software, and services. iPhone is the primary revenue driver.",
+    "value_source": "Ecosystem lock-in, brand premium, services recurring revenue (App Store, iCloud, Apple Music).",
+    "what_breaks_it": "iPhone demand plateau, regulatory forced sideloading, margin compression in services, China supply disruption.",
+    "capital_pattern": "Asset-light hardware with high services attach. Returns capital aggressively via buybacks.",
+    "recent_structural": "Services segment growing faster than hardware. Vision Pro optionality. India manufacturing diversification."
+  },
+  "MSFT": {
+    "name": "Microsoft Corporation",
+    "business": "Enterprise software, cloud computing (Azure), productivity tools (Office 365), and gaming (Xbox).",
+    "value_source": "Azure hyperscaler compounding, Office 365 sticky recurring revenue, GitHub developer platform.",
+    "what_breaks_it": "Azure losing share to AWS/GCP, OpenAI dependency risk, regulatory antitrust action on cloud bundling.",
+    "capital_pattern": "High ROIC software business. Balanced capital return with M&A (Activision, Nuance).",
+    "recent_structural": "Copilot AI integration across all products. OpenAI partnership. Azure Arc hybrid push."
+  },
+  "NVDA": {
+    "name": "NVIDIA Corporation",
+    "business": "Designs GPUs and AI chips. Dominant in AI training accelerators (H100, Blackwell). Also gaming and automotive.",
+    "value_source": "CUDA software moat, data center AI monopoly, NIM microservices ecosystem.",
+    "what_breaks_it": "Custom silicon competition (Google TPU, Amazon Trainium, Meta MTIA), export restrictions to China, hyperscaler in-house chips.",
+    "capital_pattern": "Fabless model. Extreme margin expansion from data center mix shift. Minimal fixed assets.",
+    "recent_structural": "Blackwell ramp. NIM platform launch. China export controls creating revenue gap."
+  },
+  "AMZN": {
+    "name": "Amazon.com Inc.",
+    "business": "E-commerce marketplace, AWS cloud, advertising, Prime subscription, logistics network.",
+    "value_source": "AWS ROIC engine subsidizes retail. Advertising growing as high-margin attach. Prime flywheel.",
+    "what_breaks_it": "AWS losing hyperscaler share, FTC antitrust break-up risk, logistics cost inflation, retail margin pressure.",
+    "capital_pattern": "Reinvests aggressively. AWS cash cow funds retail and new bets (Kuiper, healthcare, robotics).",
+    "recent_structural": "Generative AI infusion in AWS (Bedrock, Q). Aggressive logistics capacity build. Advertising scaling."
+  },
+  "GOOGL": {
+    "name": "Alphabet Inc. (Class A)",
+    "business": "Search advertising, YouTube, Google Cloud, Android, hardware, and autonomous vehicles (Waymo).",
+    "value_source": "Search monopoly with 90%+ share. YouTube advertising growth. GCP accelerating.",
+    "what_breaks_it": "AI-powered search disruption (ChatGPT/Perplexity), antitrust forced search divestiture, cloud market share loss.",
+    "capital_pattern": "High-ROIC core funds moonshots. Buybacks increasing. DeepMind/Waymo optionality.",
+    "recent_structural": "Gemini integration. DOJ antitrust search remedies pending. Cloud winning AI deals."
+  },
+  "META": {
+    "name": "Meta Platforms Inc.",
+    "business": "Social media advertising (Facebook, Instagram, WhatsApp). Reality Labs (VR/AR). AI infrastructure.",
+    "value_source": "3B+ user advertising network. Instagram Reels competing with TikTok. WhatsApp monetization upside.",
+    "what_breaks_it": "Regulatory ad targeting restrictions, TikTok competition stealing time, teen user decline, Reality Labs burn.",
+    "capital_pattern": "High-margin advertising funding massive capex in AI and metaverse. Buybacks ongoing.",
+    "recent_structural": "AI-driven ad personalization improving ROI. Llama open-source AI. Threads as Twitter alternative."
+  },
+  "TSLA": {
+    "name": "Tesla Inc.",
+    "business": "Electric vehicles, energy storage, solar, and autonomous driving (FSD). Robotics (Optimus).",
+    "value_source": "EV brand leadership, software-defined vehicle margin, FSD license revenue potential, energy business.",
+    "what_breaks_it": "EV price war eroding margins, FSD regulatory delay, Chinese competition (BYD), execution on Optimus.",
+    "capital_pattern": "Manufacturing-intensive with software optionality. Low debt. Vertical integration from battery to software.",
+    "recent_structural": "Model Y refresh. Cybertruck ramp. FSD subscription growth. Chinese market pressure."
+  },
+  "JPM": {
+    "name": "JPMorgan Chase & Co.",
+    "business": "Diversified banking: consumer banking, commercial banking, investment banking, asset management.",
+    "value_source": "Best-in-class deposit franchise, capital markets leadership, technology investment advantage over peers.",
+    "what_breaks_it": "Interest rate compression, credit cycle deterioration, capital requirement increases (Basel III endgame), recession.",
+    "capital_pattern": "Returns capital via buybacks and dividends when capital exceeds regulatory minimums.",
+    "recent_structural": "AI integration across banking. First Republic acquisition integration. Investment banking recovery."
+  },
+  "V": {
+    "name": "Visa Inc.",
+    "business": "Global payments network. Earns on every card transaction processed on its network worldwide.",
+    "value_source": "Network effects (issuers + merchants), brand trust, global acceptance infrastructure.",
+    "what_breaks_it": "Disintermediation by real-time payment rails (FedNow, UPI), BNPL reducing card spend, antitrust.",
+    "capital_pattern": "Asset-light toll road. 50%+ margins. Returns nearly all FCF via buybacks and dividends.",
+    "recent_structural": "Value-added services (Visa DPS, consulting) growing. Tap-to-pay penetration. B2B payment push."
+  },
+  "MA": {
+    "name": "Mastercard Incorporated",
+    "business": "Global payments network. Earns on transactions, cross-border fees, and value-added services.",
+    "value_source": "Network effects, brand, global acceptance. Cross-border premium fees are high-margin.",
+    "what_breaks_it": "Same as Visa: real-time payment substitution, BNPL, antitrust. Plus geopolitical isolation risk.",
+    "capital_pattern": "Asset-light. Very high ROIC. Aggressive buybacks. Similar to Visa but more international exposure.",
+    "recent_structural": "Crypto settlement work. Open Banking via Finicity. Click-to-Pay penetration."
+  },
+  "BRK.B": {
+    "name": "Berkshire Hathaway Inc. (Class B)",
+    "business": "Diversified conglomerate: insurance (GEICO), railroad (BNSF), utilities, manufacturing, and major public equity holdings.",
+    "value_source": "Insurance float deployed as free capital. BNSF and BHE are durable infrastructure. Equity portfolio alpha.",
+    "what_breaks_it": "Succession uncertainty, insurance catastrophe losses, concentrated Apple position, regulatory utility constraints.",
+    "capital_pattern": "Float-funded equity compounding. No dividend. Buybacks when price below intrinsic value.",
+    "recent_structural": "Cash pile near record high. Japan trading house positions. GEICO profitability recovery."
+  },
+  "LLY": {
+    "name": "Eli Lilly and Company",
+    "business": "Pharmaceutical company. GLP-1 weight loss and diabetes drugs (Mounjaro, Zepbound) driving most growth.",
+    "value_source": "GLP-1 patent protection through 2030s, pipeline depth (Alzheimer's, obesity), manufacturing scale.",
+    "what_breaks_it": "GLP-1 patent cliff, manufacturing constraint limiting supply, Medicare drug price negotiation.",
+    "capital_pattern": "R&D-intensive. Growing dividend. Capex surge for GLP-1 manufacturing capacity.",
+    "recent_structural": "Zepbound approved for OSA and heart failure. Oral GLP-1 pipeline. Donanemab Alzheimer's filing."
+  },
+  "UNH": {
+    "name": "UnitedHealth Group Incorporated",
+    "business": "Largest US health insurer (UnitedHealthcare) plus health services platform (Optum).",
+    "value_source": "Optum integrated care delivery flywheel, data advantage, employer/government payer relationships.",
+    "what_breaks_it": "MLR (medical loss ratio) spikes, government reimbursement cuts, Change Healthcare disruption fallout.",
+    "capital_pattern": "High ROIC compounder. Consistent buybacks and dividend growth. Optum acquiring physician groups.",
+    "recent_structural": "CEO departure following assassination. Change Healthcare cyberattack impact. DOJ antitrust scrutiny of Optum."
+  },
+  "XOM": {
+    "name": "Exxon Mobil Corporation",
+    "business": "Integrated oil and gas: upstream production, downstream refining, chemicals, and LNG.",
+    "value_source": "Low-cost Permian Basin production, Pioneer acquisition synergies, refining margin leverage.",
+    "what_breaks_it": "Oil price collapse below $60/bbl, energy transition accelerating demand destruction, capital return sustainability.",
+    "capital_pattern": "Grows dividend through the cycle. Pioneer acquisition doubled Permian inventory.",
+    "recent_structural": "Pioneer acquisition closed. Carbon capture projects. Chemical growth from Beaumont expansion."
+  },
+  "JNJ": {
+    "name": "Johnson & Johnson",
+    "business": "Pharmaceutical and medical devices after spinning off consumer health (Kenvue). MedTech and Innovative Medicine.",
+    "value_source": "Durable pharma pipeline (immunology, oncology), MedTech procedure recovery, dividend king status.",
+    "what_breaks_it": "Talc/asbestos litigation, key drug LOEs (Stelara biosimilars), pipeline approval failures.",
+    "capital_pattern": "Consistent dividend grower (60+ years). Balanced buybacks. MedTech acquisitions.",
+    "recent_structural": "Stelara biosimilar competition beginning. Teclistamab, Talquetamab oncology launches. Kenvue spin complete."
+  },
+  "WMT": {
+    "name": "Walmart Inc.",
+    "business": "World's largest retailer. US stores, Sam's Club, international markets, and growing Walmart+ / advertising.",
+    "value_source": "Everyday low price moat, logistics infrastructure, advertising segment (Walmart Connect) margin expansion.",
+    "what_breaks_it": "Amazon grocery competition, inflation hitting consumer discretionary, operating leverage limits.",
+    "capital_pattern": "Consistent dividend grower. Capex in automation and e-commerce. Advertising becoming high-margin attach.",
+    "recent_structural": "Advertising and marketplace growing fast. Vizio acquisition for ad data. Flipkart India growth."
+  }
+}

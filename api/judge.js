@@ -1,5 +1,7 @@
 // /api/judge.js
 
+import { analyzeOneTicker } from "./_engine.js";
+
 const SYSTEM_PROMPT = `
 You are the Judgment Engine v1.0.
 
@@ -74,23 +76,21 @@ export default async function handler(req, res) {
 
   try {
   if (domain.trim().toLowerCase() === "stocks") {
+    // Use shared engine — same analysis path as /api/analyze and /api/universe
     const ticker = decision.trim().toUpperCase();
-    const stockResponse = await fetch(`https://stock-engine-api.onrender.com/stock/${ticker}`);
-    if (!stockResponse.ok) {
-      return res.status(500).json({
-        error: "Stock engine unavailable"
-      });
+    const result = await analyzeOneTicker(ticker);
+    if (!result) {
+      return res.status(500).json({ error: "Stock engine unavailable" });
     }
-    const stockData = await stockResponse.json();
-
+    const m = result.metrics;
     return res.status(200).json({
       output:
-    `${stockData.judgment_verdict}. The structure of the business and the return conditions determine the verdict.
-    Value — ${stockData.economic_quality_pass ? "The business generates real economic value." : "The business does not consistently generate economic value."}
-    Bottleneck — ${stockData.price_pass ? "Price is not the constraint on the decision." : "The current price is the constraint on achieving the required return."}
-    Unit Cash — ${stockData.survivability_pass ? "The business converts operations into reliable cash." : "The business struggles to convert operations into reliable cash."}
-    Durability — ${stockData.roic_hit_rate >= 0.75 ? "Returns appear durable across time." : "Returns do not appear durable across time."}
-    Failure Point — ${stockData.price_pass ? "Future deterioration in the business would break the structure." : "Overpaying relative to the business economics breaks the decision."}`
+`${result.verdict}. The structure of the business and the return conditions determine the verdict.
+Value — ${m.economic_quality_pass ? "The business generates real economic value." : "The business does not consistently generate economic value."}
+Bottleneck — ${m.price_pass ? "Price is not the constraint on the decision." : "The current price is the constraint on achieving the required return."}
+Unit Cash — ${m.survivability_pass ? "The business converts operations into reliable cash." : "The business struggles to convert operations into reliable cash."}
+Durability — ${m.roic_hit_rate >= 0.75 ? "Returns appear durable across time." : "Returns do not appear durable across time."}
+Failure Point — ${m.price_pass ? "Future deterioration in the business would break the structure." : "Overpaying relative to the business economics breaks the decision."}`
     });
   }
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
